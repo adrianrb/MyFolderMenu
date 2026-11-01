@@ -1,0 +1,31 @@
+# Build trees
+build/
+build-*/
+cmake-build-*/
+out/
+output/
+
+# Release artifacts
+release/
+*.zip
+SHA256SUMS.txt
+
+# Compiler/linker artifacts
+*.exe
+*.dll
+*.lib
+*.exp
+*.pdb
+*.ilk
+*.obj
+*.o
+*.res
+*.res.o
+*.a
+
+# IDE/editor files
+.vs/
+.vscode/
+*.user
+*.suo
+*~
