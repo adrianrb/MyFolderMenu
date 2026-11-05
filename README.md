@@ -1,125 +1,120 @@
-# MyFolderMenu — versão C++ nativa (Win32)
+# MyFolderMenu — Native C++ version (Win32)
 
-Porta nativa em C++ da versão C# WinForms do MyFolderMenu. Usa apenas a API
-Win32 e a biblioteca padrão do C++; **nenhuma dependência externa** e nenhum
-runtime adicional (não precisa de .NET instalado).
+[![English](https://img.shields.io/badge/lang-English-blue.svg)](README.md)
+[![Português](https://img.shields.io/badge/lang-Português-green.svg)](README.pt.md)
 
-## Funcionalidades
+Native C++ port of the original C# WinForms version of MyFolderMenu. Uses only the Win32 API and the C++ standard library; **no external dependencies** and no extra runtime required (does not need .NET installed).
 
-- Ícone na bandeja do sistema, sem janela principal e sem entrada na barra de tarefas.
-- Menu com as pastas configuradas; submenus carregados sob demanda (lazy).
-- Pastas primeiro, arquivos depois, ambos em ordem alfabética.
-- Ícones reais do shell para pastas e arquivos.
-- Oculta arquivos/pastas com atributos *hidden* e *system*.
-- Abre arquivos com o aplicativo padrão do Windows (`ShellExecute`).
-- Temas Claro, Escuro e Sistema (segue `AppsUseLightTheme`), incluindo barra de título escura.
-- Opção de ocultar extensões de arquivo no menu.
-- Configuração persistida em INI em `%APPDATA%\MyFolderMenu\folders.ini`.
-- Migração automática do antigo `folders.json`.
-- Inicialização com o Windows via `HKCU\...\CurrentVersion\Run`.
-- Diálogos de Configurações e Sobre, com exportação/importação de configurações.
-- Instância única via mutex `Local\MyFolderMenu`.
-- DPI: PerMonitorV2 declarado no manifesto (layout dimensionado pela DPI do sistema).
+## Features
 
-## Estrutura do projeto
+- System tray icon, no main window and no taskbar entry.
+- Menu with configured folders; submenus loaded on demand (lazy).
+- Folders first, files second, both in alphabetical order.
+- Real shell icons for folders and files.
+- Hides files/folders with *hidden* and *system* attributes.
+- Opens files using the default Windows application (`ShellExecute`).
+- Light, Dark, and System themes (follows `AppsUseLightTheme`), including dark title bar.
+- Option to hide file extensions in the menu.
+- Configuration persisted in INI at `%APPDATA%\MyFolderMenu\folders.ini`.
+- Automatic migration from the old `folders.json`.
+- Startup with Windows via `HKCU\...\CurrentVersion\Run`.
+- Settings and About dialogs, with settings export/import.
+- Single instance via mutex `Local\MyFolderMenu`.
+- DPI: PerMonitorV2 declared in the manifest (layout scaled by system DPI).
+
+## Project Structure
 
 ```text
 MyFolderMenu/
-├── CMakeLists.txt              # build, testes, install e CPack
-├── version.txt                 # fonte única da versão (1.0.0)
-├── build_msvc.bat              # build x64 com MSVC (CRT estática)
-├── build_mingw.bat             # build x64 com MinGW-w64 (link estático)
-├── build.sh                    # cross-compile MinGW a partir do WSL/Linux
+├── CMakeLists.txt              # build, tests, install, and CPack
+├── version.txt                 # single source of version (1.0.0)
+├── build_msvc.bat              # x64 build with MSVC (static CRT)
+├── build_mingw.bat             # x64 build with MinGW-w64 (static linking)
+├── build.sh                    # MinGW cross-compile from WSL/Linux
 ├── cmake/
 │   └── toolchain-mingw-w64.cmake
 ├── src/
-│   ├── main.cpp                # entrada, linha de comando e loop de mensagens
-│   ├── core/                   # config, paths, strings, tema, startup, ícones, versão
-│   ├── app/                    # estado, fontes, bandeja, menu (modelo/desenho), ações
-│   ├── ui/                     # diálogos Configurações/Sobre e helpers comuns
-│   └── resources/              # ícone, manifesto, resource.h e .rc.in
+│   ├── main.cpp                # entry point, command line, and message loop
+│   ├── core/                   # config, paths, strings, theme, startup, icons, version
+│   ├── app/                    # state, fonts, tray, menu (model/draw), actions
+│   ├── ui/                     # Settings/About dialogs and common helpers
+│   └── resources/              # icon, manifest, resource.h, and .rc.in
 ├── tests/
-│   ├── test_*.cpp              # 74 testes unitários (484 verificações)
-│   ├── integration.ps1         # 16 testes de integração GUI/bandeja
-│   ├── run_tests.ps1           # suite completa no Windows
-│   ├── run_tests.sh            # suite completa no WSL (build MinGW)
-│   └── test_framework.h        # mini framework de testes
+│   ├── test_*.cpp              # 74 unit tests (484 checks)
+│   ├── integration.ps1         # 16 GUI/tray integration tests
+│   ├── run_tests.ps1           # full suite on Windows
+│   ├── run_tests.sh            # full suite on WSL (MinGW build)
+│   └── test_framework.h        # mini test framework
 └── tools/
-    └── package_release.ps1     # ZIP de release + SHA-256
+    └── package_release.ps1     # release ZIP + SHA-256
 ```
 
-Cada tela/recurso tem seu próprio par `.h`/`.cpp`; não há mais um arquivo
-monolítico. O `CMakeLists.txt` gera o `.rc` com a versão lida de `version.txt`.
+Each screen/feature has its own `.h`/`.cpp` pair; no more monolithic files. `CMakeLists.txt` generates the `.rc` with the version read from `version.txt`.
 
-## Compilação
+## Building
 
-Requisitos: CMake 3.20+ e um dos toolchains abaixo.
+Requirements: CMake 3.20+ and one of the toolchains below.
 
-### MSVC (recomendado para release)
+### MSVC (recommended for release)
 
-O script localiza o Visual Studio com `vswhere`, inicializa o `vcvars64` e
-compila com Ninja:
+The script locates Visual Studio with `vswhere`, initializes `vcvars64`, and compiles with Ninja:
 
 ```bat
 build_msvc.bat
 ```
 
-Saída: `build-msvc\MyFolderMenu.exe` (CRT estática, sem DLLs do VC++).
+Output: `build-msvc\MyFolderMenu.exe` (static CRT, no VC++ DLLs).
 
 ### MinGW-w64
 
-Com `cmake`, `g++` e `windres` no `PATH`:
+With `cmake`, `g++`, and `windres` in `PATH`:
 
 ```bat
 build_mingw.bat
 ```
 
-Saída: `build-mingw\MyFolderMenu.exe`.
+Output: `build-mingw\MyFolderMenu.exe`.
 
-### Cross-compile a partir do WSL/Linux
+### Cross-compile from WSL/Linux
 
 ```sh
 ./build.sh
 ```
 
-Usa `x86_64-w64-mingw32-g++` e `cmake/toolchain-mingw-w64.cmake`. A saída é
-`build-mingw/MyFolderMenu.exe` (~800 KB por causa das bibliotecas estáticas).
+Uses `x86_64-w64-mingw32-g++` and `cmake/toolchain-mingw-w64.cmake`. Output is `build-mingw/MyFolderMenu.exe` (~800 KB due to static libraries).
 
-## Testes
+## Testing
 
-No Windows (PowerShell 5.1+):
+On Windows (PowerShell 5.1+):
 
 ```powershell
 tests\run_tests.ps1 -BuildDir build-msvc
 ```
 
-O script executa primeiro os testes unitários (`mfm_tests.exe`) e depois os
-testes de integração, que abrem o executável real e verificam:
+The script runs unit tests (`mfm_tests.exe`) first, followed by integration tests that run the actual binary and verify:
 
-- recurso de versão 1.0.0 e cabeçalho PE x64 GUI;
-- criação da configuração padrão e migração do `folders.json`;
-- JSON/INI inválidos e preservação de configuração existente;
-- diálogos Configurações/Sobre, inclusive cancelamento;
-- menus com pastas, vazio e nos temas Claro/Escuro;
-- modo bandeja, instância única e parâmetros de diagnóstico.
+- version resource 1.0.0 and x64 GUI PE header;
+- default config creation and `folders.json` migration;
+- invalid JSON/INI and preservation of existing configuration;
+- Settings/About dialogs, including cancellation;
+- menus with folders, empty, and in Light/Dark themes;
+- tray mode, single instance, and diagnostic parameters.
 
-Os testes usam a variável `MFM_APPDATA` para redirecionar toda a configuração
-para uma pasta temporária; a configuração real do usuário nunca é tocada.
+Tests use the `MFM_APPDATA` variable to redirect all configuration to a temporary folder; the user's actual configuration is never touched.
 
-No WSL, `tests/run_tests.sh` compila com MinGW e executa as duas suítes.
+On WSL, `tests/run_tests.sh` compiles with MinGW and runs both suites.
 
-## Execução
+## Running
 
 ```bat
 MyFolderMenu.exe
 ```
 
-O aplicativo inicia direto na bandeja. Clique com o botão direito no ícone para
-abrir o menu; duplo clique abre a primeira pasta disponível.
+The app starts directly in the tray. Right-click the tray icon to open the menu; double-click opens the first available folder.
 
-## Configuração
+## Configuration
 
-Arquivo: `%APPDATA%\MyFolderMenu\folders.ini`
+File: `%APPDATA%\MyFolderMenu\folders.ini`
 
 ```ini
 [Folders]
@@ -129,56 +124,49 @@ Folder3=C:\Users\Adrian\Documents
 
 [Settings]
 HideFileExtensions=1
-Theme=Sistema
+Theme=System
 ```
 
-- `Theme`: `Sistema`, `Claro` ou `Escuro` (também aceita `light`/`dark`).
-- `HideFileExtensions`: `1`/`0` (aceita `true`/`false`, `sim`/`nao`).
-- Caminhos aceitam variáveis de ambiente (ex.: `%USERPROFILE%\Documents`).
-- Duplicatas são removidas (comparação sem diferenciar maiúsculas).
-- Se o INI não existir, é criado com Desktop, Downloads e Documentos; se houver
-  um `folders.json` antigo, ele é migrado.
+- `Theme`: `System`, `Light`, or `Dark` (also accepts `sistema`, `claro`, `escuro`).
+- `HideFileExtensions`: `1`/`0` (accepts `true`/`false`, `sim`/`nao`).
+- Paths accept environment variables (e.g., `%USERPROFILE%\Documents`).
+- Duplicates are removed (case-insensitive comparison).
+- If the INI does not exist, it is created with Desktop, Downloads, and Documents; if an old `folders.json` exists, it is migrated.
 
-As configurações também podem ser alteradas pelo diálogo **Configurações...**,
-que permite exportar/importar o INI.
+Settings can also be changed through the **Settings...** dialog, which allows exporting/importing the INI.
 
-## Diagnóstico (para testes)
+## Diagnostics (for testing)
 
-Estes parâmetros abrem uma janela/menu direto e **ignoram o mutex de instância única**:
+These parameters open a direct window/menu and **ignore the single-instance mutex**:
 
-| Parâmetro | Efeito |
+| Parameter | Effect |
 | --- | --- |
-| `--menu` | Abre o menu no centro da área de trabalho e encerra. |
-| `--settings` | Abre o diálogo de Configurações. |
-| `--about` | Abre o diálogo Sobre. |
+| `--menu` | Opens the menu at the center of the desktop and exits. |
+| `--settings` | Opens the Settings dialog. |
+| `--about` | Opens the About dialog. |
+| `--version` | Prints version and exits. |
 
 ```bat
 MyFolderMenu.exe --about
 ```
 
-## Geração do pacote de release
+## Release Packaging
 
 ```powershell
 tools\package_release.ps1 -BuildDir build-msvc
 ```
 
-Gera `release\MyFolderMenu-1.0.0-win64.zip` (executável + README + versão +
-notas) e `release\SHA256SUMS.txt`.
+Generates `release\MyFolderMenu-1.0.0-win64.zip` (executable + README + version + notes) and `release\SHA256SUMS.txt`.
 
-## Diferenças em relação à versão C#
+## Differences from the C# Version
 
-- Menus são desenhados pelo próprio código (owner-draw), para reproduzir as
-  cores exatas dos temas claro/escuro e preservar o alfa dos ícones do shell.
-- Sem tooltips por item de menu (o WinForms original também não exibia).
-- O seletor de pasta usa o navegador clássico do shell (`SHBrowseForFolder`);
-  o WinForms usava o mesmo diálogo via `FolderBrowserDialog`.
-- Layout dos diálogos dimensionado pela DPI do monitor no momento da abertura
-  (não há reposicionamento dinâmico ao mover entre monitores com DPI diferente).
-- O tema escuro de controles padrão usa `SetWindowTheme(..., L"DarkMode_Explorer")`
-  e `SetPreferredAppMode`; em versões muito antigas do Windows 10 alguns
-  controles podem aparecer com o tema claro do sistema.
-- Versão exibida em **Sobre** é lida do `VERSIONINFO` do executável.
+- Menus are owner-drawn to reproduce exact light/dark theme colors and preserve shell icon alpha channels.
+- No tooltips per menu item (original WinForms didn't show them either).
+- Folder browser uses the classic shell browser (`SHBrowseForFolder`); WinForms used the same dialog via `FolderBrowserDialog`.
+- Dialog layout scaled by monitor DPI at opening time (no dynamic repositioning when moving across different DPI monitors).
+- Dark mode for standard controls uses `SetWindowTheme(..., L"DarkMode_Explorer")` and `SetPreferredAppMode`; on very old Windows 10 versions, some controls may appear in the system light theme.
+- Version displayed in **About** is read from the executable's `VERSIONINFO`.
 
-## Licença
+## License
 
 Copyleft — adrian.barbosa@gmail.com.
